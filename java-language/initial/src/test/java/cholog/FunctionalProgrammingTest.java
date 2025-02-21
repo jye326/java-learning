@@ -1,5 +1,6 @@
 package cholog;
 
+import java.util.Collections;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -133,17 +134,30 @@ public class FunctionalProgrammingTest {
             final var neo = new User("Neo", 90);
             final var brie = new User("Brie", 12);
 
-            // TODO: 아래 코드를 Comparator를 구현하는 익명 클래스로 변경하여 User의 나이를 기준으로 정렬하세요. 람다로도 구현해보세요.
             final var users = new ArrayList<User>(List.of(brown, neo, brie));
-            for (int i = 0, end = users.size(); i < end; i++) {
-                for (int j = i + 1; j < end; j++) {
-                    if (users.get(i).age() > users.get(j).age()) {
-                        final var temp = users.get(i);
-                        users.set(i, users.get(j));
-                        users.set(j, temp);
-                    }
+            // TODO: 아래 코드를 Comparator를 구현하는 익명 클래스로 변경하여 User의 나이를 기준으로 정렬하세요. 람다로도 구현해보세요.
+
+//            for (int i = 0, end = users.size(); i < end; i++) {
+//                for (int j = i + 1; j < end; j++) {
+//                    if (users.get(i).age() > users.get(j).age()) {
+//                        final var temp = users.get(i);
+//                        users.set(i, users.get(j));
+//                        users.set(j, temp);
+//                    }
+//                }
+//            }
+
+            // 익명클래스 생성
+            final var comparator = new Comparator<User>() {
+                @Override
+                public int compare(User o1, User o2) {
+                    return o1.age - o2.age;
                 }
-            }
+            };
+            Collections.sort(users, comparator);
+
+            // 람다식 활용
+            Collections.sort(users, (o1, o2) -> o1.age - o2.age);
 
             for (final var user : users) {
                 System.out.println(user.name() + ": " + user.age());
@@ -239,46 +253,32 @@ public class FunctionalProgrammingTest {
             class Calculator {
                 // TODO: 람다를 활용하여 sum 메서드를 통해 중복을 제거하세요.
                 static int sumAll(final List<Integer> numbers) {
-                    var total = 0;
-                    for (final var number : numbers) {
-                        total += number;
-                    }
-
-                    return total;
+                    return sum(numbers, (number) -> true);
                 }
 
                 // TODO: 람다를 활용하여 sum 메서드를 통해 중복을 제거하세요.
                 static int sumAllEven(final List<Integer> numbers) {
-                    var total = 0;
-                    for (final var number : numbers) {
-                        if (number % 2 == 0) {
-                            total += number;
-                        }
-                    }
-
-                    return total;
+                    return sum(numbers, (number) -> number % 2 == 0);
                 }
 
                 // TODO: 람다를 활용하여 sum 메서드를 통해 중복을 제거하세요.
                 static int sumAllOverThree(final List<Integer> numbers) {
-                    var total = 0;
-                    for (final var number : numbers) {
-                        if (number > 3) {
-                            total += number;
-                        }
-                    }
-
-                    return total;
+                    return sum(numbers, (number) -> number > 3);
                 }
 
                 private static int sum(
                         final List<Integer> numbers,
                         final Predicate<Integer> condition
                 ) {
+                    return numbers.stream()
+                            .filter(condition)
+                            .reduce(Integer::sum)
+                            .get();
                     // TODO: 조건에 맞게 필터링하여 합계를 구하는 기능을 구현하세요.
-                    return 0;
                 }
             }
+
+
 
             final List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
 
@@ -296,7 +296,7 @@ public class FunctionalProgrammingTest {
         참고: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">java.util.function</a>
         */
     }
-
+///여기까지~~
     /**
      * Stream은 자바의 컬렉션을 함수형 프로그래밍으로 다루기 위한 라이브러리입니다.
      * Stream API는 크게 생성, 가공, 소비의 세 가지 단계로 이루어져 있습니다.

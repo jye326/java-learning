@@ -230,7 +230,7 @@ public class FunctionalProgrammingTest {
         void 기존_함수의_중복을_람다를_활용해_중복을_제거한다() {
             class Calculator {
                 static int sumAll(final List<Integer> numbers) {
-                    return sum(numbers, number -> true);
+                    return sum(numbers, (number) -> true);
                 }
 
                 static int sumAllEven(final List<Integer> numbers) {
