@@ -485,6 +485,9 @@ public class FunctionalProgrammingTest {
          * Stream API를 활용하여 전쟁과 평화 내용 중 가장 많이 등장하는 단어의 수를 찾는 기능을 구현해봅니다.
          * 가능하면 세미콜론을 한 번만 사용하여 구현해보세요.
          */
+
+        // 이건 진짜 어렵다.
+
         @Test
         @DisplayName("전쟁과 평화 내용 중 가장 많이 등장하는 단어의 수를 찾는다")
         void 전쟁과_평화_내용_중_가장_많이_등장하는_단어의_수를_찾는다() throws IOException {

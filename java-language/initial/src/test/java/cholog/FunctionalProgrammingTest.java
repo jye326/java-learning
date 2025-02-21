@@ -1,6 +1,7 @@
 package cholog;
 
-import java.util.Collections;
+import java.util.*;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -8,10 +9,6 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -241,6 +238,7 @@ public class FunctionalProgrammingTest {
         void Optional() {
             final var optional = Optional.of("Optional");
             System.out.println(optional.get());
+            ;
         }
 
         /**
@@ -277,7 +275,6 @@ public class FunctionalProgrammingTest {
                     // TODO: 조건에 맞게 필터링하여 합계를 구하는 기능을 구현하세요.
                 }
             }
-
 
 
             final List<Integer> numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8, 9);
@@ -401,26 +398,34 @@ public class FunctionalProgrammingTest {
             );
 
             // TODO: 아래 코드를 선언형으로 변경하세요.
-            final var filteredCrews = new ArrayList<Crew>();
-            for (final var crew : crews) {
-                if (crew.name().startsWith("김") &&
-                        crew.age() >= 25 &&
-                        crew.age() < 30 &&
-                        crew.nickname().length() == 2) {
-                    filteredCrews.add(crew);
-                }
-            }
+//            final var filteredCrews = new ArrayList<Crew>();
+//            for (final var crew : crews) {
+//                if (crew.name().startsWith("김") &&
+//                        crew.age() >= 25 &&
+//                        crew.age() < 30 &&
+//                        crew.nickname().length() == 2) {
+//                    filteredCrews.add(crew);
+//                }
+//            }
+//
+//            var maxAge = 0;
+//            Crew maxAgeCrew = null;
+//            for (final var crew : filteredCrews) {
+//                if (crew.age() > maxAge) {
+//                    maxAge = crew.age();
+//                    maxAgeCrew = crew;
+//                }
+//            }
+//
+//            System.out.println(maxAgeCrew.name() + ": " + maxAgeCrew.nickname() + ": " + maxAgeCrew.age());
+            var maxAgeCrew = crews.stream()
+                    .filter(crew -> crew.name.startsWith("김"))
+                    .filter(crew-> 25<=crew.age && crew.age<30)
+                    .filter(crew -> crew.nickname.length() == 2)
+                    .max(Comparator.comparing(Crew::age))
+                    .stream().peek(crew -> System.out.printf(crew.name() + ": " + crew.nickname() + ": " + crew.age()))
+                    .findAny().orElseThrow();
 
-            var maxAge = 0;
-            Crew maxAgeCrew = null;
-            for (final var crew : filteredCrews) {
-                if (crew.age() > maxAge) {
-                    maxAge = crew.age();
-                    maxAgeCrew = crew;
-                }
-            }
-
-            System.out.println(maxAgeCrew.name() + ": " + maxAgeCrew.nickname() + ": " + maxAgeCrew.age());
 
             // -----------------------------------------------------------------
 
@@ -434,16 +439,18 @@ public class FunctionalProgrammingTest {
         @Test
         @DisplayName("Stream API를 활용하여 전쟁과 평화 내용 중 문자 길이가 12보다 큰 경우의 수를 구한다")
         void Stream_API를_활용하여_전쟁과_평화_내용_중_문자_길이가_12보다_큰_경우의_수를_구한다() throws IOException {
-            final var contents = Files.readString(Paths.get("src/test/resources/war-and-peace.txt"));
+
 
             // TODO: 아래 코드를 Stream API를 활용하여 구현하세요.
-            final var words = contents.split("\\P{L}+");
-            var count = 0;
-            for (final var word : words) {
-                if (word.length() > 12) {
-                    count++;
-                }
-            }
+//            final var words = contents.split("\\P{L}+");
+//            var count = 0;
+//            for (final var word : words) {
+//                if (word.length() > 12) {
+//                    count++;
+//                }
+//            }
+
+            var count = Arrays.stream(Files.readString(Paths.get("src/test/resources/war-and-peace.txt")).split("\\P{L}+")).filter(word -> word.length()>12).count();
 
             // -----------------------------------------------------------------
 
@@ -460,17 +467,18 @@ public class FunctionalProgrammingTest {
             final var numbers = List.of(1, 2, 3, 4, 5);
 
             // TODO: 아래 코드를 Stream API를 활용하여 구현하세요.
-            final var stringBuilder = new StringBuilder();
-            for (int i = 0, end = numbers.size(); i < end; i++) {
-                stringBuilder.append(numbers.get(i));
-
-                if (i != end - 1) {
-                    stringBuilder.append(":");
-                }
-            }
-
-            final var result = stringBuilder.toString();
-
+//            final var stringBuilder = new StringBuilder();
+//            for (int i = 0, end = numbers.size(); i < end; i++) {
+//                stringBuilder.append(numbers.get(i));
+//
+//                if (i != end - 1) {
+//                    stringBuilder.append(":");
+//                }
+//            }
+//
+//            final var result = stringBuilder.toString();
+            final var result = numbers.stream().map(String::valueOf).reduce((a,b)->a + ":" + b).orElseThrow()
+            ;
             // -----------------------------------------------------------------
 
             assertThat(result).isEqualTo("1:2:3:4:5");
@@ -499,13 +507,12 @@ public class FunctionalProgrammingTest {
                 if (number * 2 < 7) {
                     continue;
                 }
-
                 result += number * 2;
             }
 
             // -----------------------------------------------------------------
-
-            assertThat(result).isEqualTo(expected);
+            var result2 = numbers.stream().filter(number -> 2 < number).filter(number -> number <= 5).map(number -> number * 2).filter(number-> number >=7).reduce(Integer::sum).orElseThrow();
+            assertThat(result2).isEqualTo(expected);
         }
 
         /**
@@ -527,8 +534,16 @@ public class FunctionalProgrammingTest {
 
             // TODO: 위 조건에 맞는 10개의 단어를 추출하세요.
             // final var words = contents.split("\\P{L}+");
-            final var results = new ArrayList<String>();
-
+//            final var results = new ArrayList<String>();
+            // Arrays.stream
+            var results = Arrays.stream(Files.readString(Paths.get("src/test/resources/war-and-peace.txt")).split("\\P{L}+"))
+                    .filter(word -> word.length() > 12)
+                    .distinct()
+                            .sorted(Comparator.comparing(String::length))
+                                    .limit(100) // limit
+                            .filter(word->Character.isLowerCase(word.charAt(1)))
+                                    .map(String::toLowerCase)
+                                            .sorted().limit(10).toList();
             // -----------------------------------------------------------------
             assertThat(results).containsExactly(
                     "acknowledging",
@@ -551,11 +566,12 @@ public class FunctionalProgrammingTest {
         @Test
         @DisplayName("전쟁과 평화 내용 중 가장 많이 등장하는 단어의 수를 찾는다")
         void 전쟁과_평화_내용_중_가장_많이_등장하는_단어의_수를_찾는다() throws IOException {
-            final var contents = Files.readString(Paths.get("src/test/resources/war-and-peace.txt"));
+//            final var contents = Files.readString(Paths.get("src/test/resources/war-and-peace.txt"));
 
             // TODO: 가장 많이 등장하는 단어의 수를 찾으세요.
             // final var words = contents.split("\\P{L}+");
-            final var result = 0L;
+            final var result = Arrays.stream(Files.readString(Paths.get("src/test/resources/war-and-peace.txt")).split("\\P{L}+")).
+                    ;
 
             // -----------------------------------------------------------------
             assertThat(result).isEqualTo(31_949L);
