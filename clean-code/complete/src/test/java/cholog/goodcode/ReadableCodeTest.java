@@ -825,7 +825,6 @@ public class ReadableCodeTest {
                 if (menuItems.size() != menuItems.stream().distinct().count()) {
                     throw new IllegalArgumentException("중복된 메뉴가 있습니다.");
                 }
-
                 this.menuItems = menuItems;
             }
         }

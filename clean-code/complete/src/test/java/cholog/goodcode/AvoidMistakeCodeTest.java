@@ -82,7 +82,7 @@ public class AvoidMistakeCodeTest {
             }
 
             public static Position valueOf(final int value) {
-                return CACHE.computeIfAbsent(value, Position::new);
+                return CACHE.computeIfAbsent(value, Position::new); // 특정 값이 존재하면 해당 CACHE값 반환, 없으면 new Position 생성하고 반환
             }
 
             public Position increase() {

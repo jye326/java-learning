@@ -35,7 +35,7 @@ public class AvoidMistakeCodeTest {
     void 어떻게_같은_위치_객체를_사용할_때_발생할_수_있는_실수를_방지할_수_있을까() {
         // TODO: 같은 위치 객체를 사용할 때 발생할 수 있는 실수를 방지할 수 있는 방법을 고민 후 개선해보세요.
         class Position {
-            private int value;
+            private final int value;
 
             Position() {
                 this(0);
@@ -45,8 +45,8 @@ public class AvoidMistakeCodeTest {
                 this.value = value;
             }
 
-            public void increase() {
-                value++;
+            public Position increase() {
+                return new Position(value +1);
             }
 
             @Override
@@ -67,17 +67,17 @@ public class AvoidMistakeCodeTest {
                 String name,
                 Position position
         ) {
-            public void forward() {
-                position.increase();
+            public Car forward() {
+                return new Car(name, Car.this.position.increase());
             }
         }
 
         final var position = new Position();
 
-        final var neoCar = new Car("네오", position);
+        var neoCar = new Car("네오", position);
         final var brownCar = new Car("브라운", position);
 
-        neoCar.forward();
+        neoCar = neoCar.forward();
 
         // Note: 네오의 자동차만 움직였기 때문에 브라운의 자동차는 움직이지 않아야 한다.
         assertThat(neoCar.position()).isEqualTo(new Position(1));
@@ -353,7 +353,7 @@ public class AvoidMistakeCodeTest {
             private final List<Car> participants;
 
             RacingGame(final List<Car> participants) {
-                this.participants = participants;
+                this.participants = new ArrayList<>(participants);
             }
 
             public List<Car> selectWinners() {
@@ -374,7 +374,7 @@ public class AvoidMistakeCodeTest {
             }
 
             List<Car> getParticipants() {
-                return participants;
+                return new ArrayList<>(participants);   // 방어적 복사 : 복사본 반환해 주기
             }
         }
 
@@ -469,7 +469,7 @@ public class AvoidMistakeCodeTest {
 
             List<Car> getParticipants() {
                 // Note: 매번 새로운 리스트를 생성하여 성능상의 이슈가 발생할 수 있다.
-                return new ArrayList<>(participants);
+                return unmodifiableList(participants);  // 모 이런게 다 있냐
             }
         }
 
@@ -537,10 +537,10 @@ public class AvoidMistakeCodeTest {
         }
 
         class RacingGame {
-            private final List<Car> participants;
+            public final List<Car> participants;
 
             RacingGame(final List<Car> participants) {
-                this.participants = new ArrayList<>(participants);
+                this.participants = unmodifiableList(participants);
             }
 
             public List<Car> selectWinners() {
@@ -573,7 +573,7 @@ public class AvoidMistakeCodeTest {
         final var winners = racingGame.selectWinners();
         assertThat(winners).containsExactly(brownCar);
 
-        participants.add(new Car("브리", new Position(2)));
+        racingGame.participants.add(new Car("브리", new Position(2)));
         assertThat(winners).containsExactly(brownCar);
         assertThat(racingGame.getParticipants()).containsExactlyElementsOf(List.of(neoCar, brownCar));
 

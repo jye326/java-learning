@@ -82,16 +82,16 @@ public class PredictableCodeTest {
                 this.participants = participants;
             }
 
-            Integer averagePosition() {
+            Optional averagePosition() {
                 final OptionalDouble average = participants.stream()
                         .mapToInt(Car::position)
                         .average();
 
                 if (average.isEmpty()) {
                     // Note: null은 버그를 유발할 수 있다.
-                    return null;
+                    return Optional.empty();
                 }
-                return (int) average.getAsDouble();
+                return Optional.of(average.getAsDouble());
             }
         }
 
@@ -197,20 +197,22 @@ public class PredictableCodeTest {
             private int position;
 
             // TODO: 자동차 이동과 조회를 같이 할 경우 어떠한 문제가 있을지 고민 후 개선해보세요.
-            int move(final int power) {
-                if (power <= 4) {
-                    return position;
+            void move(final int power) {
+                if (power >= 4) {
+                    position++;
                 }
+            }
 
-                return ++position;
+            int getPosition() {
+                return position;
             }
         }
 
         final var car = new Car();
 
-        final var position = car.move(5);
+        car.move(5);
 
-        assertThat(position).isEqualTo(1);
+        assertThat(car.getPosition()).isEqualTo(1);
     }
 
     /**
@@ -297,20 +299,21 @@ public class PredictableCodeTest {
     @Test
     @DisplayName("문자열로 명령을 받는 것은 어떠한 문제가 있을지 고민 후 개선한다.")
     void 문자열로_명령을_받는_것은_어떠한_문제가_있을지_고민_후_개선한다() {
+        enum Command {
+            PLUS,
+            MINUS;
+        }
         class Calculator {
-            private static final String PLUS = "PLUS";
-            private static final String MINUS = "MINUS";
-
             // TODO: 문자열로 명령을 받는 것은 어떠한 문제가 있을지 고민 후 개선해보세요.
             public static int calculate(
-                    final String command,
+                    final Command command,
                     final int left,
                     final int right
             ) {
-                if (PLUS.equals(command)) {
+                if (Command.PLUS == command) {
                     return left + right;
                 }
-                if (MINUS.equals(command)) {
+                if (Command.MINUS == command) {
                     return left - right;
                 }
 
@@ -319,8 +322,8 @@ public class PredictableCodeTest {
         }
 
         assertAll(
-                () -> assertThat(Calculator.calculate("PLUS", 1, 2)).isEqualTo(3),
-                () -> assertThat(Calculator.calculate("MINUS", 1, 2)).isEqualTo(-1)
+                () -> assertThat(Calculator.calculate(Command.PLUS, 1, 2)).isEqualTo(3),
+                () -> assertThat(Calculator.calculate(Command.MINUS, 1, 2)).isEqualTo(-1)
         );
     }
 
@@ -360,10 +363,14 @@ public class PredictableCodeTest {
 
         // TODO: 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓치지 않을 수 있는 방법을 고민 후 개선해보세요.
 
-        assertAll(
-                () -> assertThat(Calculator.calculate(Command.PLUS, 1, 2)).isEqualTo(3),
-                () -> assertThat(Calculator.calculate(Command.MINUS, 1, 2)).isEqualTo(-1)
-        );
+//        assertAll(
+//                () -> assertThat(Calculator.calculate(Command.PLUS, 1, 2)).isEqualTo(3),
+//                () -> assertThat(Calculator.calculate(Command.MINUS, 1, 2)).isEqualTo(-1)
+//        );
+
+        for (Command command : Command.values()) {
+            assertThatCode(() ->Calculator.calculate(command, 1, 2)).doesNotThrowAnyException();
+        }
     }
 
     /**

@@ -175,14 +175,15 @@ public class ExceptionHandlingTest {
                 } else if (randomValue == 2) {
                     throw new ChildException();
                 }
-            } catch (final SuperException e) {
+            }catch (final ChildException e) { // Note: 하위 클래스의 예외를 먼저 처리하지 않으면 컴파일 에러가 발생한다. // 아니 이런 사실이!
                 System.out.println("예외 처리 성공");
             }
-            /* TODO: 주석을 풀고 컴파일 에러를 해결해보세요.
-             catch (final ChildException e) { // Note: 하위 클래스의 예외를 먼저 처리하지 않으면 컴파일 에러가 발생한다.
+            catch (final SuperException e) {
                 System.out.println("예외 처리 성공");
             }
-             */
+
+
+
         }
 
         /**
@@ -268,15 +269,18 @@ public class ExceptionHandlingTest {
             void 유저의_이름의_최대_길이가_5자로_제한되어_있을_때_예외_처리를_어떻게_하는_것이_좋을까() {
                 record User(String name) {
                     static User create(final String name) {
-                        if (name.length() > 5) {
+                        if (name.length() <= 5) {
                             // TODO: 어떻게 예외 처리를 하는 것이 좋을지 고민 후 코드로 작성해보세요.
-                            return null;
+                            return new User(name);
                         }
-                        return new User(name);
+                        throw new IllegalArgumentException("헤헤길어");
                     }
                 }
 
                 // TODO: 의도에 맞게 동작하는지 JUnit, AssertJ를 사용하여 확인해보세요.
+                assertThatThrownBy(()->User.create("율율율무무무")).hasMessage("헤헤길어");
+
+
             }
 
             /**
@@ -289,16 +293,16 @@ public class ExceptionHandlingTest {
             @DisplayName("예외 처리를 강제하지 않는 코드를 어떻게 작성할 수 있을까?")
             void 예외_처리를_강제하지_않는_코드를_어떻게_작성할_수_있을까() {
                 record User(String name) {
-                    static User create(final String name) throws Exception {
+                    static User create(final String name) {
                         if (name.length() > 5) {
                             // TODO: 예외 처리를 강제하지 않는 코드를 어떻게 작성할 수 있을까?
-                            throw new Exception("이름의 길이는 5자를 넘을 수 없습니다.");
+                            throw new IllegalArgumentException("이름의 길이는 5자를 넘을 수 없습니다.");
                         }
                         return new User(name);
                     }
                 }
 
-                // TODO: 의도에 맞게 동작하는지 JUnit, AssertJ를 사용하여 확인해보세요.
+
             }
 
             /**

@@ -36,19 +36,19 @@ public class ReadableCodeTest {
     void 어떻게_의도를_전달할_수_있을까() {
         // TODO: 자동차를 움직이고 위치가 변경된다는 의도를 드러낼 수 있는 코드를 작성해보세요.
         class Car {
+            // 자동차 위치
             private int p = 0;
 
             void forward() {
+                p += 1;
                 if (p > 5) {
                     throw new IllegalStateException("최대 5까지만 움직일 수 있습니다.");
                 }
-
-                p += 1;
             }
         }
 
-        final var car = new Car();
 
+        final var car = new Car();
         car.forward();
         assertThat(car.p).isEqualTo(1);
     }
@@ -64,21 +64,21 @@ public class ReadableCodeTest {
         // TODO: 자동차를 움직이고 위치가 변경된다는 의도를 드러낼 수 있는 코드를 작성해보세요.
         class Car {
             // 자동차 위치
-            private int p = 0;
+            private int carPosition = 0;
 
             void forward() {
-                if (p > 5) {
+                if (carPosition > 5) {
                     throw new IllegalStateException("최대 5까지만 움직일 수 있습니다.");
                 }
 
-                p += 1;
+                carPosition += 1;
             }
         }
 
         final var car = new Car();
 
         car.forward();
-        assertThat(car.p).isEqualTo(1);
+        assertThat(car.carPosition).isEqualTo(1);
     }
 
     /**
@@ -92,22 +92,55 @@ public class ReadableCodeTest {
     @DisplayName("코드를 통해 객체의 역할을 명확하게 드러내는 방법은 없을까")
     void 코드를_통해_객체의_역할을_명확하게_드러내는_방법은_없을까() {
         // TODO: 객체의 역할을 명확하게 드러내는 코드를 작성해보세요.
-        class Car {
-            private int position;
-
-            void forward() {
-                if (position > 5) {
+        class Position {
+            private final int position;
+            public Position() {
+                this(0);
+            }
+            public Position(int position) {
+                if (position < 0 || position > 5) {
                     throw new IllegalStateException("최대 5까지만 움직일 수 있습니다.");
                 }
+                this.position = position;
+            }
+            public Position forward() {
+                return new Position(position+1);
+            }
 
-                position += 1;
+            public int getPosition() {
+                return position;
+            }
+
+            // equals 랑 hash 자동 제네레이트
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
+                Position position1 = (Position) o;
+                return position == position1.position;
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hashCode(position);
+            }
+        }
+
+
+        class Car {
+            Position position = new Position();
+            public void forward() {
+                position = position.forward();
             }
         }
 
         final var car = new Car();
-
         car.forward();
-        assertThat(car.position).isEqualTo(1);
+        assertThat(car.position.getPosition()).isEqualTo(1);
     }
 
     /**
@@ -179,30 +212,30 @@ public class ReadableCodeTest {
             private String name;
             private int position;
 
+            void forward()  {
+                position += 1;
+            }
+
+            void backward()
+            {
+                position -= 1;
+            }
+
             public String getName()
             {
                 return name;
             }
 
-            void Forward()  {
-                position += 1;
-            }
-
-            public int position() {
+            public int getPosition() {
                 return position;
-            }
-
-            void minusPosition()
-            {
-                position--;
             }
         }
         // @formatter:on
 
         final var car = new Car();
 
-        car.Forward();
-        assertThat(car.position()).isEqualTo(1);
+        car.forward();
+        assertThat(car.getPosition()).isEqualTo(1);
     }
 
     /**
@@ -250,28 +283,31 @@ public class ReadableCodeTest {
     @DisplayName("어떻게 추상화하여 메서드를 작게 만들 수 있을까?")
     void 어떻게_추상화하여_메서드를_작게_만들_수_있을까() {
         // TODO: 역할을 적절히 추상화하여 메서드를 작게 만들어보세요. 메서드의 시그니처는 변경하지 않습니다.
+        // 메서드 시그니처 : 이름이랑 인자를 의미
         class LottoGame {
             int calculatePrize(
                     final List<Integer> numbers,
                     final List<Integer> winningNumbers
             ) {
-                for (int number : numbers) {
-                    if (number < 1 || number > 45) {
-                        throw new IllegalArgumentException("로또 번호는 1부터 45까지의 숫자여야 합니다.");
-                    }
-                }
-                for (int winningNumber : winningNumbers) {
-                    if (winningNumber < 1 || winningNumber > 45) {
-                        throw new IllegalArgumentException("로또 번호는 1부터 45까지의 숫자여야 합니다.");
-                    }
-                }
-                if (new HashSet<>(numbers).size() != 6) {
-                    throw new IllegalArgumentException("로또 번호는 6개여야 합니다.");
-                }
-                if (new HashSet<>(winningNumbers).size() != 6) {
-                    throw new IllegalArgumentException("로또 번호는 6개여야 합니다.");
-                }
+                validateNumberFormat(numbers, winningNumbers);
+                int count = getWinningCount(numbers, winningNumbers);
+                return switch (count) {
+                    case 6 -> 1_000_000_000;
+                    case 5 -> 50_000_000;
+                    case 4 -> 500_000;
+                    case 3 -> 5_000;
+                    default -> 0;
+                };
+            }
 
+            private static void validateNumberFormat(List<Integer> numbers, List<Integer> winningNumbers) {
+                validateNumberRange(numbers);
+                validateNumberRange(winningNumbers);
+                validateNumbersCount(numbers);
+                validateNumbersCount(winningNumbers);
+            }
+
+            private static int getWinningCount(List<Integer> numbers, List<Integer> winningNumbers) {
                 int count = 0;
                 for (int number : numbers) {
                     for (int winningNumber : winningNumbers) {
@@ -280,14 +316,21 @@ public class ReadableCodeTest {
                         }
                     }
                 }
+                return count;
+            }
 
-                return switch (count) {
-                    case 6 -> 1_000_000_000;
-                    case 5 -> 50_000_000;
-                    case 4 -> 500_000;
-                    case 3 -> 5_000;
-                    default -> 0;
-                };
+            private static void validateNumbersCount(List<Integer> numbers) {
+                if (new HashSet<>(numbers).size() != 6) {
+                    throw new IllegalArgumentException("로또 번호는 6개여야 합니다.");
+                }
+            }
+
+            private static void validateNumberRange(List<Integer> numbers) {
+                for (int number : numbers) {
+                    if (number < 1 || number > 45) {
+                        throw new IllegalArgumentException("로또 번호는 1부터 45까지의 숫자여야 합니다.");
+                    }
+                }
             }
         }
 
@@ -509,9 +552,9 @@ public class ReadableCodeTest {
     void 어떻게_매개변수의_의미를_전달할_수_있을까() {
         // TODO: Crew 클래스를 확인하지 않고 매개변수의 의미를 전달할 수 있는 코드를 작성해보세요.
         final var crew = new Crew(
-                "Neo",
-                Set.of("쌈밥", "김치찌개", "탕수육", "비빔밥"),
-                Set.of("샐러드", "파인애플 볶음밥", "미소시루", "하이라이스")
+                "Neo",// name
+                Set.of("쌈밥", "김치찌개", "탕수육", "비빔밥"),//likeFoods
+                Set.of("샐러드", "파인애플 볶음밥", "미소시루", "하이라이스")//dislikeFoods
         );
 
         assertThat(crew.name()).isEqualTo("Neo");
@@ -532,13 +575,30 @@ public class ReadableCodeTest {
           dislikeMenuItems: Set.of("샐러드", "파인애플 볶음밥", "미소시루", "하이라이스")
         );
          */
+        class Builder{
+            private String name;
+            private Set<String> likeFoods;
+            private Set<String> dislikeFoods;
 
+            public Builder name(String name) {
+                this.name = name;
+                return this;
+            }
+            public Builder likeFoods(Set<String> likeFoods) {
+                this.likeFoods = likeFoods;
+                return this;
+            }
+            public Builder dislikeFoods(Set<String> dislikeFoods) {
+                this.dislikeFoods = dislikeFoods;
+                return this;
+            }
+            public Crew build() {
+                return new Crew(name, likeFoods, dislikeFoods);
+            }
+
+        }
+        Crew crew = new Builder().name("Neo").likeFoods(Set.of("쌈밥", "김치찌개", "탕수육", "비빔밥")).dislikeFoods(/*dislikeMenuItems*/ Set.of("샐러드", "파인애플 볶음밥", "미소시루", "하이라이스")).build();
         // TODO: Crew 클래스를 확인하지 않고 매개변수의 의미를 전달할 수 있는 코드를 작성해보세요.
-        final var crew = new Crew(
-                /*name*/ "Neo",
-                /*likeMenuItems*/ Set.of("쌈밥", "김치찌개", "탕수육", "비빔밥"),
-                /*dislikeMenuItems*/ Set.of("샐러드", "파인애플 볶음밥", "미소시루", "하이라이스")
-        );
 
         assertThat(crew.name()).isEqualTo("Neo");
     }

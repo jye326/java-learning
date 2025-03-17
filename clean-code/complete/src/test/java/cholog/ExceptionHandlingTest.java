@@ -46,10 +46,10 @@ public class ExceptionHandlingTest {
          */
         @Test
         @DisplayName("예외 처리를 하지 않으면 컴파일 에러가 발생한다")
-        void 예외_처리를_하지_않으면_컴파일_에러가_발생한다() {
+        void 예외_처리를_하지_않으면_컴파일_에러가_발생한다() throws CheckedException {
             // Note: 컴파일 타임 예외의 경우 처리하지 않으면 컴파일이 불가능하다.
             // TODO: 아래 코드의 주석을 풀어 컴파일 에러를 확인해보세요.
-            // throw new CheckedException();
+//             throw new CheckedException();
         }
 
         /**
